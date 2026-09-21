@@ -98,8 +98,12 @@ export class VisionRenderer {
     )
   }
 
-  static create(sourceWidth: number, sourceHeight: number): VisionRenderer {
-    const size = fitWorkingSize(sourceWidth, sourceHeight, probeCapabilities())
+  static create(sourceWidth: number, sourceHeight: number, maxEdge?: number): VisionRenderer {
+    const capabilities = probeCapabilities()
+    const limit = maxEdge
+      ? { maxTextureSize: Math.min(capabilities.maxTextureSize, maxEdge) }
+      : capabilities
+    const size = fitWorkingSize(sourceWidth, sourceHeight, limit)
     const context = createGlContext(size.width, size.height)
     return new VisionRenderer(context, size.width, size.height)
   }

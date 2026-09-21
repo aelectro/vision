@@ -5,6 +5,7 @@ import { renderTransform } from '~/render/transform'
 export type PipelineEvent =
   | { type: 'started'; visionId: string }
   | { type: 'transformed'; visionId: string }
+  | { type: 'videoProgress'; visionId: string; fraction: number }
   | { type: 'finished'; visionId: string }
   | { type: 'failed'; visionId: string; message: string }
 
@@ -51,6 +52,21 @@ export async function processVision(visionId: string, override?: RenderParams): 
       const params = override ?? (await resolveParams())
       await renderTransform(visionId, { params, modelVersion: 0 })
       emit({ type: 'transformed', visionId })
+
+      // Loaded on demand: the muxer and its codec tables are a sizeable chunk,
+      // and nothing about capture or the still transformation needs them.
+      const video = await import('~/render/video')
+      try {
+        await video.exportVideo(visionId, {
+          params,
+          modelVersion: 0,
+          onProgress: (fraction) => emit({ type: 'videoProgress', visionId, fraction }),
+        })
+      } catch (error) {
+        // The still is already saved and useful, so a browser that cannot
+        // encode video is a missing feature rather than a failed vision.
+        if (!(error instanceof video.VideoUnsupportedError)) throw error
+      }
 
       await setVisionStatus(visionId, 'ready')
       emit({ type: 'finished', visionId })

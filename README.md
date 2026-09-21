@@ -75,6 +75,28 @@ npm test              # vitest
 npm run generate:assets   # regenerate PWA icons from public/logo.svg
 ```
 
+### Verifying the parts Node cannot run
+
+The shader chain needs WebGL and the video export needs WebCodecs, neither of
+which exists under Node, so those are checked by driving a real browser. They
+need `npm run dev` running in another terminal.
+
+```bash
+npm run verify:render    # renders a synthetic image, measures the contour pass
+npm run verify:video     # encodes a real ten-second clip and plays it back
+npm run diagnose:render  # per-pass statistics, for when a signal goes missing
+```
+
+`verify:render` works by difference: it renders the same image with the contour
+overlay off and then on, so what it measures is the edge pass and nothing else.
+That is what caught the shader bug described in the commit history — absolute
+brightness would have looked fine.
+
+These use the system Edge rather than a downloaded Chromium, because this
+machine's TLS interception blocks Playwright's browser download. Run
+`npm run playwright:install` if you would rather use a real Chromium and your
+network allows it.
+
 ## Environment notes
 
 These are real constraints of this machine's toolchain, discovered while setting the project

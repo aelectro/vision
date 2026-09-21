@@ -17,6 +17,7 @@
     "test:watch": "vitest",
     "build:vocabulary": "tsx tools/build-vocabulary.ts",
     "verify:render": "node tools/verify-render.mjs",
+    "verify:video": "node tools/verify-video.mjs",
     "diagnose:render": "node tools/diagnose-render.mjs",
     "playwright:install": "playwright install chromium",
     "generate:assets": "pwa-assets-generator"
