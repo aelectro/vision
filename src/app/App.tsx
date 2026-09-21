@@ -5,6 +5,7 @@ import { CaptureRoute } from '~/app/routes/CaptureRoute'
 import { GalleryRoute } from '~/app/routes/GalleryRoute'
 import { SettingsRoute } from '~/app/routes/SettingsRoute'
 import { VisionRoute } from '~/app/routes/VisionRoute'
+import { I18nProvider } from '~/core/i18n/I18nProvider'
 
 /**
  * Hash routing is deliberate: the app is served as static files with no
@@ -13,16 +14,18 @@ import { VisionRoute } from '~/app/routes/VisionRoute'
  */
 export function App() {
   return (
-    <HashRouter>
-      <Routes>
-        <Route element={<AppLayout />}>
-          <Route index element={<CaptureRoute />} />
-          <Route path="gallery" element={<GalleryRoute />} />
-          <Route path="vision/:id" element={<VisionRoute />} />
-          <Route path="settings" element={<SettingsRoute />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </HashRouter>
+    <I18nProvider>
+      <HashRouter>
+        <Routes>
+          <Route element={<AppLayout />}>
+            <Route index element={<CaptureRoute />} />
+            <Route path="gallery" element={<GalleryRoute />} />
+            <Route path="vision/:id" element={<VisionRoute />} />
+            <Route path="settings" element={<SettingsRoute />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </HashRouter>
+    </I18nProvider>
   )
 }

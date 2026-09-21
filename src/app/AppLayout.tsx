@@ -2,17 +2,19 @@ import type { ReactNode } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 
 import '~/app/AppLayout.css'
+import { useT } from '~/core/i18n/useI18n'
+import type { MessageKey } from '~/core/i18n/messages'
 
 type NavItem = {
   to: string
-  labelKey: string
+  labelKey: MessageKey
   icon: ReactNode
 }
 
 const items: NavItem[] = [
   {
     to: '/',
-    labelKey: 'Camera',
+    labelKey: 'nav.camera',
     icon: (
       <svg className="shell__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path
@@ -27,7 +29,7 @@ const items: NavItem[] = [
   },
   {
     to: '/gallery',
-    labelKey: 'Gallery',
+    labelKey: 'nav.gallery',
     icon: (
       <svg className="shell__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <rect x="3.5" y="4" width="7" height="9" rx="1.6" stroke="currentColor" strokeWidth="1.6" />
@@ -63,7 +65,7 @@ const items: NavItem[] = [
   },
   {
     to: '/settings',
-    labelKey: 'Settings',
+    labelKey: 'nav.settings',
     icon: (
       <svg className="shell__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6" />
@@ -80,6 +82,7 @@ const items: NavItem[] = [
 
 export function AppLayout() {
   const { pathname } = useLocation()
+  const t = useT()
   // The camera view is full-bleed and carries its own controls.
   const immersive = pathname === '/'
 
@@ -92,7 +95,7 @@ export function AppLayout() {
         {items.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.to === '/'} className="shell__link">
             {item.icon}
-            <span>{item.labelKey}</span>
+            <span>{t(item.labelKey)}</span>
           </NavLink>
         ))}
       </nav>
