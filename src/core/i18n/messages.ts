@@ -70,6 +70,13 @@ const uk = {
   'common.cancel': 'Скасувати',
   'common.retry': 'Спробувати ще',
   'common.back': 'Назад',
+  'common.dismiss': 'Закрити',
+
+  'pwa.updateReady': 'Доступна нова версія',
+  'pwa.reload': 'Оновити',
+  'pwa.install': 'Встановити',
+  'pwa.installOffer': 'Додай Vision на головний екран — працюватиме офлайн.',
+  'pwa.installIos': 'Щоб працювало офлайн: «Поділитися» → «На екран «Початок»».',
 } as const
 
 export type MessageKey = keyof typeof uk
@@ -130,6 +137,13 @@ const en: Record<MessageKey, string> = {
   'common.cancel': 'Cancel',
   'common.retry': 'Try again',
   'common.back': 'Back',
+  'common.dismiss': 'Dismiss',
+
+  'pwa.updateReady': 'A new version is available',
+  'pwa.reload': 'Reload',
+  'pwa.install': 'Install',
+  'pwa.installOffer': 'Add Vision to your home screen so it works offline.',
+  'pwa.installIos': 'To work offline: Share → Add to Home Screen.',
 }
 
 export const messages: Record<Locale, Record<MessageKey, string>> = { uk, en }

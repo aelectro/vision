@@ -6,6 +6,7 @@ import { GalleryRoute } from '~/app/routes/GalleryRoute'
 import { SettingsRoute } from '~/app/routes/SettingsRoute'
 import { VisionRoute } from '~/app/routes/VisionRoute'
 import { I18nProvider } from '~/core/i18n/I18nProvider'
+import { PwaPrompts } from '~/core/pwa/PwaPrompts'
 
 /**
  * Hash routing is deliberate: the app is served as static files with no
@@ -25,6 +26,7 @@ export function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
+        <PwaPrompts />
       </HashRouter>
     </I18nProvider>
   )
