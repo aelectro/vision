@@ -22,5 +22,13 @@
     "typescript/consistent-type-imports": "error",
     "import/no-cycle": "error"
   },
-  "ignorePatterns": ["dist", "dev-dist", "node_modules", "public"]
+  "ignorePatterns": ["dist", "dev-dist", "node_modules", "public"],
+  "overrides": [
+    {
+      "files": ["tools/**"],
+      "rules": {
+        "eslint/no-console": "off"
+      }
+    }
+  ]
 }

@@ -1,4 +1,5 @@
 import analyzeFrag from '~/render/shaders/analyze.frag.glsl?raw'
+import blitFrag from '~/render/shaders/blit.frag.glsl?raw'
 import blurFrag from '~/render/shaders/blur.frag.glsl?raw'
 import composeFrag from '~/render/shaders/compose.frag.glsl?raw'
 import edgesFrag from '~/render/shaders/edges.frag.glsl?raw'
@@ -20,6 +21,8 @@ export type RenderFrameOptions = {
   time?: number
   /** Scales every animated term; 0 renders the image as a still. */
   motion?: number
+  /** Shows an intermediate pass instead of the composite, for diagnosis. */
+  debug?: 'analysis' | 'tensor' | 'edges'
 }
 
 /**
@@ -47,6 +50,7 @@ export class VisionRenderer {
     blur: Program
     edges: Program
     compose: Program
+    blit: Program
   }
   private readonly vao: WebGLVertexArrayObject
   private sourceTexture: WebGLTexture | null = null
@@ -74,6 +78,7 @@ export class VisionRenderer {
       blur: createProgram(gl, quadVert, blurFrag),
       edges: createProgram(gl, quadVert, edgesFrag),
       compose: createProgram(gl, quadVert, composeFrag),
+      blit: createProgram(gl, quadVert, blitFrag),
     }
 
     // Stands in for a real depth map until that model tier is downloaded:
@@ -192,10 +197,28 @@ export class VisionRenderer {
     this.bind(edgeProgram, 'uAnalysis', analysis.texture, 0)
     this.bind(edgeProgram, 'uTensor', tensorV.texture, 1)
     gl.uniform2f(edgeProgram.uniform('uTexel'), tx, ty)
-    gl.uniform1f(edgeProgram.uniform('uThreshold'), (params.edgeThreshold - 0.5) * 0.2)
+    // Squared so the slider has fine control over faint structure, where the
+    // interesting lines are, rather than spending half its travel on edges
+    // that were never in doubt.
+    const edgeThreshold = 0.003 + 0.06 * params.edgeThreshold * params.edgeThreshold
+    gl.uniform1f(edgeProgram.uniform('uThreshold'), edgeThreshold)
     gl.uniform1f(edgeProgram.uniform('uWidth'), params.edgeWidth)
     gl.uniform1f(edgeProgram.uniform('uCoherence'), params.coherence)
     this.draw(edgeProgram, edges)
+
+    if (options.debug) {
+      const blit = this.programs.blit
+      const texture =
+        options.debug === 'analysis'
+          ? analysis.texture
+          : options.debug === 'tensor'
+            ? tensorV.texture
+            : edges.texture
+      gl.useProgram(blit.handle)
+      this.bind(blit, 'uSrc', texture, 0)
+      this.draw(blit, null)
+      return this.context.canvas
+    }
 
     const compose = this.programs.compose
     gl.useProgram(compose.handle)

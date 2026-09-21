@@ -16,6 +16,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build:vocabulary": "tsx tools/build-vocabulary.ts",
+    "verify:render": "node tools/verify-render.mjs",
+    "diagnose:render": "node tools/diagnose-render.mjs",
+    "playwright:install": "playwright install chromium",
     "generate:assets": "pwa-assets-generator"
   },
   "dependencies": {
@@ -35,6 +38,7 @@
     "@webgpu/types": "0.1.74",
     "fake-indexeddb": "^6.2.5",
     "oxlint": "^1.85.0",
+    "playwright": "^1.63.0",
     "prettier": "^3.9.8",
     "tsx": "^4.20.6",
     "typescript": "7.0.2",

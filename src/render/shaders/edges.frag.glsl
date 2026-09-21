@@ -13,8 +13,6 @@ uniform float uWidth;
 uniform float uCoherence;
 
 const float K = 1.6;
-const float TAU = 0.96;
-const float PHI = 18.0;
 
 float sampleLuma(vec2 uv) {
   return texture(uAnalysis, uv).r;
@@ -68,11 +66,15 @@ void main() {
   float near = blurAlong(vUv, stepVec, sigma);
   float far = blurAlong(vUv, stepVec, sigma * K);
 
-  float dog = near - TAU * far;
+  // A plain difference of Gaussians, with no tau coefficient. Scaling one term
+  // by tau < 1 leaves a pedestal proportional to local brightness, so flat and
+  // smoothly graded areas would report edges purely for being bright. This
+  // form is exactly zero wherever luminance is constant or linear, which is
+  // what makes the threshold mean the same thing everywhere in the image.
+  float dog = far - near;
 
-  // Continuous XDoG falloff. An explicit branch at the threshold would leave a
-  // visible step exactly where the faintest lines live.
-  float line = 1.0 - smoothstep(-1.0, 1.0, tanh(PHI * (dog - uThreshold)));
+  float t1 = uThreshold + max(0.006, uThreshold * 1.5);
+  float line = smoothstep(uThreshold, t1, dog);
 
   fragColor = vec4(clamp(line, 0.0, 1.0), coherence, 0.0, 1.0);
 }
