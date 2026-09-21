@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { Link } from 'react-router'
 
 import { createVision } from '~/core/db/repositories'
+import { processVision } from '~/core/jobs/pipeline'
 import { useT } from '~/core/i18n/useI18n'
 import '~/features/capture/Capture.css'
 import { captureFromFile, captureFromVideo } from '~/features/capture/captureImage'
@@ -71,6 +72,8 @@ export function CaptureRoute() {
   const save = async (captured: Awaited<ReturnType<typeof captureFromVideo>>) => {
     const vision = await createVision({ ...captured, description })
     setDescription('')
+    // Transformation runs in the background; the detail screen shows progress.
+    void processVision(vision.id)
     await navigate(`/vision/${vision.id}`)
   }
 
