@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc", "import", "promise"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    // Obsolete under the automatic JSX runtime configured in tsconfig.
+    "react/react-in-jsx-scope": "off",
+    // Side-effect CSS imports are how Vite attaches styles to a component.
+    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
+    "eslint/no-console": ["warn", { "allow": ["warn", "error"] }],
+    "typescript/consistent-type-imports": "error",
+    "import/no-cycle": "error"
+  },
+  "ignorePatterns": ["dist", "dev-dist", "node_modules", "public"]
+}

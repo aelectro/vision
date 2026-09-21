@@ -1,0 +1,70 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.shell__content {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.shell__nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(12px);
+  padding-bottom: var(--safe-bottom);
+}
+
+/* The capture screen is full-bleed; its own shutter bar replaces the nav. */
+.shell__nav[data-hidden='true'] {
+  display: none;
+}
+
+.shell__link {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 0 8px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.shell__link[aria-current='page'] {
+  color: var(--text);
+}
+
+.shell__icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .shell {
+    flex-direction: row-reverse;
+  }
+
+  .shell__nav {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 4px;
+    border-top: none;
+    border-left: 1px solid var(--border);
+    width: 88px;
+    padding-top: calc(var(--safe-top) + 16px);
+  }
+
+  .shell__link {
+    flex: 0 0 auto;
+    padding: 14px 0;
+  }
+}

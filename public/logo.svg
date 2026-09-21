@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#0b0b0f" />
+  <!-- The lens: what the camera sees. -->
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#2a2a36" stroke-width="16" />
+  <!-- The image hiding inside it: two eyes and a curve, drawn as contours. -->
+  <g stroke="#e8734a" stroke-width="18" stroke-linecap="round" fill="none">
+    <path d="M186 224c12-16 34-16 46 0" />
+    <path d="M280 224c12-16 34-16 46 0" />
+    <path d="M196 300c30 34 90 34 120 0" />
+  </g>
+  <circle cx="256" cy="256" r="196" fill="none" stroke="#e8734a" stroke-width="10" opacity="0.35" />
+</svg>

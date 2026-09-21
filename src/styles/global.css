@@ -1,0 +1,73 @@
+:root {
+  color-scheme: dark;
+
+  --bg: #0b0b0f;
+  --surface: #15151c;
+  --surface-raised: #1d1d26;
+  --border: #2a2a36;
+  --text: #f2f2f5;
+  --text-dim: #9a9aa8;
+  --accent: #e8734a;
+  --accent-dim: #8a4229;
+  --danger: #e05252;
+
+  --radius: 14px;
+  --radius-sm: 8px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  /* The capture screen owns the viewport; scrolling is per-view. */
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+input,
+textarea {
+  font: inherit;
+}
+
+/* Honour the user's motion preference for the animated previews. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
