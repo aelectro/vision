@@ -54,6 +54,14 @@ const uk = {
   'settings.training': 'Навчання',
   'settings.storage': 'Сховище',
 
+  'storage.used': 'Зайнято додатком',
+  'storage.available': 'Доступно',
+  'storage.persisted': 'Захищено від очищення',
+  'storage.persistedYes': 'Так',
+  'storage.persistedNo': 'Ні',
+  'storage.persistHint':
+    'Браузер може видалити збережені фото, якщо не заходити сюди тиждень. Додай сайт на початковий екран — і вони збережуться.',
+
   'status.pending': 'В черзі',
   'status.working': 'Обробляю',
   'status.ready': 'Готово',
@@ -105,6 +113,14 @@ const en: Record<MessageKey, string> = {
   'settings.models': 'Models',
   'settings.training': 'Training',
   'settings.storage': 'Storage',
+
+  'storage.used': 'Used by this app',
+  'storage.available': 'Available',
+  'storage.persisted': 'Protected from eviction',
+  'storage.persistedYes': 'Yes',
+  'storage.persistedNo': 'No',
+  'storage.persistHint':
+    'The browser may delete your saved photos if you do not open this for a week. Add the site to your home screen and they will stay.',
 
   'status.pending': 'Queued',
   'status.working': 'Working',

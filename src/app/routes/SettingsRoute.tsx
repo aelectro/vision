@@ -1,9 +1,12 @@
 import '~/app/routes/SettingsRoute.css'
 import { useI18n } from '~/core/i18n/useI18n'
 import { locales, localeNames } from '~/core/i18n/messages'
+import { formatBytes } from '~/core/storage/quota'
+import { useStorageInfo } from '~/core/storage/useStorageInfo'
 
 export function SettingsRoute() {
   const { locale, setLocale, t } = useI18n()
+  const storage = useStorageInfo()
 
   return (
     <section className="settings">
@@ -54,8 +57,28 @@ export function SettingsRoute() {
       <div className="settings__section">
         <h2 className="settings__heading">{t('settings.storage')}</h2>
         <div className="settings__card">
-          <p className="settings__placeholder">—</p>
+          <div className="settings__row">
+            <span>{t('storage.used')}</span>
+            <span className="settings__value">
+              {storage.loading ? '…' : formatBytes(storage.appBytes ?? 0)}
+            </span>
+          </div>
+          <div className="settings__row">
+            <span>{t('storage.available')}</span>
+            <span className="settings__value">
+              {storage.quota === null ? '—' : formatBytes(storage.quota - (storage.usage ?? 0))}
+            </span>
+          </div>
+          <div className="settings__row">
+            <span>{t('storage.persisted')}</span>
+            <span className="settings__value">
+              {storage.persisted ? t('storage.persistedYes') : t('storage.persistedNo')}
+            </span>
+          </div>
         </div>
+        {!storage.persisted && !storage.loading && (
+          <p className="settings__hint">{t('storage.persistHint')}</p>
+        )}
       </div>
     </section>
   )

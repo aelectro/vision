@@ -33,6 +33,7 @@
     "@vite-pwa/assets-generator": "^1.0.4",
     "@vitejs/plugin-react": "6.1.1",
     "@webgpu/types": "0.1.74",
+    "fake-indexeddb": "^6.2.5",
     "oxlint": "^1.85.0",
     "prettier": "^3.9.8",
     "tsx": "^4.20.6",

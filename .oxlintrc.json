@@ -15,8 +15,9 @@
     "react/only-export-components": ["warn", { "allowConstantExport": true }],
     // Obsolete under the automatic JSX runtime configured in tsconfig.
     "react/react-in-jsx-scope": "off",
-    // Side-effect CSS imports are how Vite attaches styles to a component.
-    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
+    // Side-effect CSS imports are how Vite attaches styles to a component,
+    // and test setup shims are imported for their effect too.
+    "import/no-unassigned-import": ["error", { "allow": ["**/*.css", "fake-indexeddb/auto"] }],
     "eslint/no-console": ["warn", { "allow": ["warn", "error"] }],
     "typescript/consistent-type-imports": "error",
     "import/no-cycle": "error"
