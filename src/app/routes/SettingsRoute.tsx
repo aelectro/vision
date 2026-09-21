@@ -3,6 +3,8 @@ import { useI18n } from '~/core/i18n/useI18n'
 import { locales, localeNames } from '~/core/i18n/messages'
 import { formatBytes } from '~/core/storage/quota'
 import { useStorageInfo } from '~/core/storage/useStorageInfo'
+import { ModelsSection } from '~/features/models/ModelsSection'
+import { TrainingSection } from '~/features/models/TrainingSection'
 
 export function SettingsRoute() {
   const { locale, setLocale, t } = useI18n()
@@ -40,19 +42,9 @@ export function SettingsRoute() {
         </div>
       </div>
 
-      <div className="settings__section">
-        <h2 className="settings__heading">{t('settings.models')}</h2>
-        <div className="settings__card">
-          <p className="settings__placeholder">—</p>
-        </div>
-      </div>
+      <ModelsSection />
 
-      <div className="settings__section">
-        <h2 className="settings__heading">{t('settings.training')}</h2>
-        <div className="settings__card">
-          <p className="settings__placeholder">—</p>
-        </div>
-      </div>
+      <TrainingSection />
 
       <div className="settings__section">
         <h2 className="settings__heading">{t('settings.storage')}</h2>

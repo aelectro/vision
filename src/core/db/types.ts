@@ -64,7 +64,8 @@ export type FeedbackRecord = {
 }
 
 export type ModelStateRecord = {
-  id: 'head'
+  /** 'head' is the trainable network; 'vocabulary' caches archetype embeddings. */
+  id: 'head' | 'vocabulary'
   version: number
   weights: ArrayBuffer
   steps: number

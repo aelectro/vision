@@ -29,13 +29,27 @@ arrives.
 
 | Tier  | Size  | Downloaded when                | Unlocks                                         |
 | ----- | ----- | ------------------------------ | ----------------------------------------------- |
-| **0** | 0 MB  | never                          | Capture and shader transformation — no ML at all |
+| **0** | 0 MB  | never                          | Capture, shader transformation and the clip — no ML at all |
 | **1** | 11 MB | in the background after photo 1 | Recognition, similarity, personalised training   |
 | **2** | 18 MB | before the first video          | Real depth map and 2.5D parallax                 |
 | **3** | 41 MB | the first time you type a description | Understanding of free-form text            |
 
-The vocabulary of image archetypes ("face", "bird", "tree", "cloud") is encoded **at build
-time** into a single ~0.5 MB file, so recognition works without the text model.
+Whichever tier arrives first also brings the ONNX runtime, about 7 MB
+compressed. That is stated separately in the settings screen rather than folded
+into a model's size, because a progress bar claiming eleven megabytes and then
+spending most of its time elsewhere would be a lie.
+
+The vocabulary of image archetypes — face, bird, tree, cloud — is encoded into
+one small file at build time, so recognition works without the text model:
+
+```bash
+npm run build:vocabulary    # needs network access to Hugging Face
+```
+
+If that step never runs the app still works: it encodes the vocabulary on the
+device the first time the text tier is present, and caches the result. The
+build step exists to avoid needing that tier at all, not because anything
+depends on it.
 
 ## Running it
 
@@ -121,6 +135,21 @@ up. They are written down so they do not have to be rediscovered.
   a peer range of `^1.0.0` and rejects 2.x.
 - **TypeScript 7 removed `baseUrl`.** Path aliases in `tsconfig.app.json` are resolved
   relative to the config file instead.
+- **This network intercepts TLS.** Anything that downloads at build time fails with
+  `SELF_SIGNED_CERT_IN_CHAIN` — Playwright's browser download and `npm run build:vocabulary`
+  both do. The browser verification scripts therefore drive the system Edge, and the
+  vocabulary falls back to being encoded on device.
+
+## What has and has not been verified
+
+The shader chain and the video export are checked in a real browser by the
+scripts above, and the trainable head's gradients are checked against finite
+differences.
+
+The model tiers are **not** verified end to end: the weights cannot be
+downloaded from this machine, so recognition, depth and text understanding have
+been written against the documented APIs but never actually executed. They are
+the first thing to exercise on a network that allows the download.
 
 ## Layout
 

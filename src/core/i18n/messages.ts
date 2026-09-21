@@ -77,6 +77,41 @@ const uk = {
   'pwa.install': 'Встановити',
   'pwa.installOffer': 'Додай Vision на головний екран — працюватиме офлайн.',
   'pwa.installIos': 'Щоб працювало офлайн: «Поділитися» → «На екран «Початок»».',
+
+  'tune.title': 'Налаштувати',
+  'tune.adjust': 'Показати повзунки',
+  'tune.hide': 'Сховати',
+  'tune.like': 'Подобається',
+  'tune.dislike': 'Не те',
+  'tune.applyAndLearn': 'Застосувати й навчити',
+  'tune.note':
+    'Твої правки стають прикладом для навчання: наступного разу для схожого образу модель підбере параметри ближче до цих.',
+  'tune.edgeStrength': 'Сила контурів',
+  'tune.edgeThreshold': 'Поріг деталей',
+  'tune.contrast': 'Контраст',
+  'tune.saturation': 'Насиченість',
+  'tune.posterise': 'Постеризація',
+  'tune.parallax': 'Глибина руху',
+
+  'model.title': 'Модель',
+  'model.examples': 'Прикладів',
+  'model.steps': 'Кроків навчання',
+  'model.loss': 'Похибка',
+  'model.reset': 'Скинути навчання',
+  'model.retrain': 'Перенавчити на всій галереї',
+  'model.empty': 'Модель ще не навчалась. Оціни кілька образів — і вона почне підлаштовуватись.',
+
+  'models.title': 'Моделі',
+  'models.absent': 'Не завантажено',
+  'models.downloading': 'Завантаження',
+  'models.ready': 'Готово',
+  'models.failed': 'Помилка',
+  'models.vision': 'Розпізнавання образів',
+  'models.depth': 'Карта глибини',
+  'models.text': 'Розуміння опису',
+  'models.runtimeNote':
+    'До першої моделі додається рантайм ШІ (~7 МБ у стиснутому вигляді). Далі все з кешу.',
+  'models.delete': 'Видалити',
 } as const
 
 export type MessageKey = keyof typeof uk
@@ -144,6 +179,42 @@ const en: Record<MessageKey, string> = {
   'pwa.install': 'Install',
   'pwa.installOffer': 'Add Vision to your home screen so it works offline.',
   'pwa.installIos': 'To work offline: Share → Add to Home Screen.',
+
+  'tune.title': 'Tune',
+  'tune.adjust': 'Show sliders',
+  'tune.hide': 'Hide',
+  'tune.like': 'Like it',
+  'tune.dislike': 'Not it',
+  'tune.applyAndLearn': 'Apply and learn',
+  'tune.note':
+    'Your adjustments become a training example: next time something looks like this, the model will start closer to these settings.',
+  'tune.edgeStrength': 'Contour strength',
+  'tune.edgeThreshold': 'Detail threshold',
+  'tune.contrast': 'Contrast',
+  'tune.saturation': 'Saturation',
+  'tune.posterise': 'Posterise',
+  'tune.parallax': 'Depth of motion',
+
+  'model.title': 'Model',
+  'model.examples': 'Examples',
+  'model.steps': 'Training steps',
+  'model.loss': 'Loss',
+  'model.reset': 'Reset training',
+  'model.retrain': 'Retrain on the whole gallery',
+  'model.empty':
+    'The model has not learned anything yet. Rate a few visions and it will start to adapt.',
+
+  'models.title': 'Models',
+  'models.absent': 'Not downloaded',
+  'models.downloading': 'Downloading',
+  'models.ready': 'Ready',
+  'models.failed': 'Failed',
+  'models.vision': 'Image recognition',
+  'models.depth': 'Depth map',
+  'models.text': 'Description understanding',
+  'models.runtimeNote':
+    'The first model also brings the AI runtime (about 7 MB compressed). Everything after that comes from cache.',
+  'models.delete': 'Delete',
 }
 
 export const messages: Record<Locale, Record<MessageKey, string>> = { uk, en }

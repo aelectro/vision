@@ -5,9 +5,12 @@ import { deleteVision, updateVision } from '~/core/db/repositories'
 import type { BlobKind } from '~/core/db/types'
 import { processVision } from '~/core/jobs/pipeline'
 import { useT } from '~/core/i18n/useI18n'
+import { Tuner } from '~/features/feedback/Tuner'
 import { useBlobUrl } from '~/features/gallery/useBlobUrl'
 import '~/features/vision/Vision.css'
+import { useArtifactParams } from '~/features/vision/useArtifactParams'
 import { useVision } from '~/features/vision/useVision'
+import { learnFrom } from '~/ml/head/trainer'
 
 type Tab = 'original' | 'transform' | 'video'
 
@@ -41,6 +44,8 @@ export function VisionRoute() {
   const [draft, setDraft] = useState('')
   const [draftKey, setDraftKey] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [rating, setRating] = useState<'like' | 'dislike' | null>(null)
+  const { params, setParams } = useArtifactParams(id)
 
   const transformUrl = useBlobUrl(id, 'transform')
 
@@ -95,6 +100,28 @@ export function VisionRoute() {
   const remove = async () => {
     await deleteVision(vision.id)
     await navigate('/gallery', { replace: true })
+  }
+
+  const rate = async (signal: 'like' | 'dislike') => {
+    setRating(signal)
+    setBusy(true)
+    try {
+      await learnFrom(vision.id, signal, params)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const applyAndLearn = async () => {
+    setBusy(true)
+    try {
+      // The edit is the lesson: whatever the user settled on is, for this
+      // image, the right answer. Re-rendering with it also proves the point.
+      await learnFrom(vision.id, 'edit', params)
+      await processVision(vision.id, params)
+    } finally {
+      setBusy(false)
+    }
   }
 
   const descriptionChanged = draft.trim() !== (vision.description ?? '')
@@ -183,6 +210,15 @@ export function VisionRoute() {
         )}
 
         {vision.error && <p className="vision__error">{vision.error}</p>}
+
+        <Tuner
+          params={params}
+          busy={busy}
+          rating={rating}
+          onChange={setParams}
+          onApply={() => void applyAndLearn()}
+          onRate={(signal) => void rate(signal)}
+        />
       </div>
     </section>
   )
