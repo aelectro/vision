@@ -62,21 +62,22 @@ npm run dev          # http://localhost:5173
 
 ### Opening it on a phone
 
-The camera, service worker and PWA install all require HTTPS, and `http://192.168.x.x` does
-not qualify. Two options:
+The camera, service worker and PWA install all require HTTPS, and
+`http://192.168.x.x` does not qualify.
 
 ```bash
-npm run dev:https    # locally trusted certificate via mkcert
+npm run dev:https    # self-signed certificate, reachable over the LAN
 ```
 
-On iOS you must install **and** trust the generated root certificate — two separate steps
-that are easy to conflate:
+Safari will warn about the certificate, and it treats an untrusted one as a
+reason to refuse service worker registration — so for testing the *installed*
+PWA, a tunnel (Cloudflare Tunnel, ngrok) is the reliable route. It gives a real
+public HTTPS origin and exercises the genuine install flow.
 
-1. Settings → General → VPN & Device Management → install the profile.
-2. Settings → General → About → Certificate Trust Settings → enable full trust for it.
-
-If that is fiddly, a tunnel (Cloudflare Tunnel, ngrok) gives you a real public HTTPS origin
-and tends to be less painful — and it exercises the genuine install flow.
+`vite-plugin-mkcert` would issue a locally trusted certificate instead, but it
+depends on undici, which will not load on Node 20, and a config-time dynamic
+import cannot be guarded because the config bundler hoists it. On Node 22 it is
+worth adding back.
 
 ### Other commands
 
@@ -127,10 +128,11 @@ up. They are written down so they do not have to be rediscovered.
   - Vite 8 requires `^20.19.0 || >=22.12.0` — satisfied.
   - Vitest is pinned to **4.1.11**, the newest line that still supports Node 20. Vitest 5
     requires Node 22+.
-  - `vite-plugin-mkcert` pulls in `undici@8`, which refuses to load on Node 20. It is
-    therefore imported **lazily**, only in `dev:https` mode, so that `dev`, `build` and
-    `test` stay usable. Running `dev:https` itself needs Node 22+.
-  - Moving to Node 22 LTS would remove the last two caveats.
+  - `vite-plugin-mkcert` depends on `undici@8`, which refuses to load on Node 20, so
+    `dev:https` uses `@vitejs/plugin-basic-ssl` instead. A config-time dynamic import
+    cannot be guarded against this, because the config bundler hoists it into a static
+    one before any `try` runs.
+  - Moving to Node 22 LTS would remove both caveats.
 - **`@vite-pwa/assets-generator` is pinned to 1.x**, because `vite-plugin-pwa@1.3.0` declares
   a peer range of `^1.0.0` and rejects 2.x.
 - **TypeScript 7 removed `baseUrl`.** Path aliases in `tsconfig.app.json` are resolved

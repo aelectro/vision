@@ -1,14 +1,21 @@
 import { fileURLToPath, URL } from 'node:url'
 
+import basicSsl from '@vitejs/plugin-basic-ssl'
 import react from '@vitejs/plugin-react'
 import { defineConfig, type PluginOption } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// `npm run dev:https` serves over a locally trusted certificate so that the
-// camera, service worker and PWA install flow work when the site is opened
-// from a phone. Plain `npm run dev` stays on http://localhost, which browsers
-// already treat as a secure context.
-export default defineConfig(async ({ mode }) => {
+// `npm run dev:https` serves over TLS so that the camera, service worker and
+// PWA install flow work when the site is opened from a phone; plain `npm run
+// dev` stays on http://localhost, which browsers already treat as secure.
+//
+// The certificate is self-signed rather than locally trusted. vite-plugin-mkcert
+// would be nicer on iOS, but it depends on undici, which will not load on Node
+// 20, and a config-time dynamic import cannot be guarded because the config
+// bundler hoists it. For testing an installed PWA on a phone, a tunnel is the
+// reliable route anyway - Safari treats an untrusted certificate as a reason to
+// refuse service worker registration.
+export default defineConfig(({ mode }) => {
   const https = mode === 'https'
 
   const plugins: PluginOption[] = [
@@ -57,13 +64,7 @@ export default defineConfig(async ({ mode }) => {
     }),
   ]
 
-  // Imported lazily: vite-plugin-mkcert pulls in undici, which refuses to load
-  // on Node 20. Keeping it out of the default path means plain `dev`, `build`
-  // and `test` stay usable there.
-  if (https) {
-    const { default: mkcert } = await import('vite-plugin-mkcert')
-    plugins.push(mkcert())
-  }
+  if (https) plugins.push(basicSsl())
 
   return {
     // Overridden at build time when publishing to a GitHub Pages project site.
