@@ -1,0 +1,175 @@
+.capture {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  overflow: hidden;
+}
+
+.capture__stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.capture__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The front camera is mirrored the way a mirror would be. */
+  transform: scaleX(var(--mirror, 1));
+}
+
+.capture__message {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 32px;
+  text-align: center;
+  color: var(--text-dim);
+}
+
+.capture__messageTitle {
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+}
+
+.capture__messageHint {
+  margin: 0;
+  font-size: 14px;
+  max-width: 34ch;
+  line-height: 1.5;
+}
+
+.capture__top {
+  position: absolute;
+  top: calc(var(--safe-top) + 12px);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 14px;
+}
+
+.capture__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.45);
+  backdrop-filter: blur(10px);
+  color: var(--text);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.capture__chip svg {
+  width: 17px;
+  height: 17px;
+}
+
+.capture__controls {
+  flex: 0 0 auto;
+  padding: 14px 16px calc(var(--safe-bottom) + 18px);
+  background: linear-gradient(to top, #000 62%, rgb(0 0 0 / 0.75));
+}
+
+.capture__describe {
+  width: 100%;
+  padding: 11px 14px;
+  margin-bottom: 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 15px;
+}
+
+.capture__describe::placeholder {
+  color: var(--text-dim);
+}
+
+.capture__describe:focus {
+  outline: none;
+  border-color: var(--accent-dim);
+}
+
+.capture__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.capture__side {
+  flex: 0 0 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-dim);
+  font-size: 10px;
+}
+
+.capture__side svg {
+  width: 24px;
+  height: 24px;
+}
+
+.capture__shutter {
+  flex: 0 0 auto;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  border: 4px solid rgb(255 255 255 / 0.9);
+  background: transparent;
+  padding: 4px;
+}
+
+.capture__shutter:disabled {
+  opacity: 0.45;
+}
+
+.capture__shutterInner {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 120ms ease;
+}
+
+.capture__shutter:active .capture__shutterInner {
+  transform: scale(0.88);
+}
+
+.capture__fileInput {
+  display: none;
+}
+
+.capture__error {
+  margin: 10px 0 0;
+  color: var(--danger);
+  font-size: 13px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .capture__controls {
+    padding-bottom: 24px;
+  }
+
+  .capture__describe {
+    max-width: 520px;
+    margin-inline: auto;
+  }
+}
