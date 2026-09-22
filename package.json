@@ -18,6 +18,7 @@
     "build:vocabulary": "tsx tools/build-vocabulary.ts",
     "verify:render": "node tools/verify-render.mjs",
     "verify:video": "node tools/verify-video.mjs",
+    "verify:diagnostics": "node tools/verify-diagnostics.mjs",
     "diagnose:render": "node tools/diagnose-render.mjs",
     "benchmark": "node tools/benchmark.mjs",
     "playwright:install": "playwright install chromium",

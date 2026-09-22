@@ -112,6 +112,11 @@ const uk = {
   'models.runtimeNote':
     'До першої моделі додається рантайм ШІ (~7 МБ у стиснутому вигляді). Далі все з кешу.',
   'models.delete': 'Видалити',
+
+  'diagnostics.title': 'Діагностика пристрою',
+  'diagnostics.rerun': 'Перевірити ще',
+  'diagnostics.copy': 'Скопіювати звіт',
+  'diagnostics.copied': 'Скопійовано',
 } as const
 
 export type MessageKey = keyof typeof uk
@@ -215,6 +220,11 @@ const en: Record<MessageKey, string> = {
   'models.runtimeNote':
     'The first model also brings the AI runtime (about 7 MB compressed). Everything after that comes from cache.',
   'models.delete': 'Delete',
+
+  'diagnostics.title': 'Device diagnostics',
+  'diagnostics.rerun': 'Check again',
+  'diagnostics.copy': 'Copy report',
+  'diagnostics.copied': 'Copied',
 }
 
 export const messages: Record<Locale, Record<MessageKey, string>> = { uk, en }

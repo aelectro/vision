@@ -5,6 +5,7 @@ import { formatBytes } from '~/core/storage/quota'
 import { useStorageInfo } from '~/core/storage/useStorageInfo'
 import { ModelsSection } from '~/features/models/ModelsSection'
 import { TrainingSection } from '~/features/models/TrainingSection'
+import { DiagnosticsSection } from '~/features/diagnostics/DiagnosticsSection'
 
 export function SettingsRoute() {
   const { locale, setLocale, t } = useI18n()
@@ -72,6 +73,8 @@ export function SettingsRoute() {
           <p className="settings__hint">{t('storage.persistHint')}</p>
         )}
       </div>
+
+      <DiagnosticsSection />
     </section>
   )
 }

@@ -1,0 +1,47 @@
+.diagnostics__item {
+  padding: 13px 16px;
+}
+
+.diagnostics__item + .diagnostics__item {
+  border-top: 1px solid var(--border);
+}
+
+.diagnostics__line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.diagnostics__value {
+  color: var(--text-dim);
+  font-size: 13px;
+  text-align: right;
+}
+
+.diagnostics__item[data-verdict='ok'] .diagnostics__value {
+  color: #6fbf73;
+}
+
+.diagnostics__item[data-verdict='warn'] .diagnostics__value {
+  color: var(--accent);
+}
+
+.diagnostics__item[data-verdict='fail'] .diagnostics__value {
+  color: var(--danger);
+}
+
+.diagnostics__note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.diagnostics__ua {
+  margin: 10px 2px 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  word-break: break-all;
+}
