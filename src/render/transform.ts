@@ -1,11 +1,13 @@
 import { getBlob, saveArtifact } from '~/core/db/repositories'
 import type { RenderParams } from '~/ml/params'
+import { WHOLE_FRAME, type FocusRegion } from '~/render/focus'
 import { VisionRenderer } from '~/render/gl/renderer'
 
 /** Model version 0 means the parameters came from defaults, not the network. */
 export type TransformOptions = {
   params: RenderParams
   modelVersion: number
+  focus?: FocusRegion
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement | OffscreenCanvas): Promise<Blob> {
@@ -44,7 +46,9 @@ export async function renderTransform(visionId: string, options: TransformOption
       depthMap.close()
     }
 
-    const blob = await canvasToBlob(renderer.render(options.params))
+    const blob = await canvasToBlob(
+      renderer.render(options.params, { focus: options.focus ?? WHOLE_FRAME }),
+    )
 
     await saveArtifact({
       visionId,

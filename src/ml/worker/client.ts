@@ -123,6 +123,10 @@ export function embedImage(bitmap: ImageBitmap): Promise<Float32Array> {
   return send<Float32Array>({ type: 'embedImage', bitmap }, [bitmap])
 }
 
+export function embedImageBatch(bitmaps: ImageBitmap[]): Promise<Float32Array[]> {
+  return send<Float32Array[]>({ type: 'embedImageBatch', bitmaps }, bitmaps)
+}
+
 export function embedText(text: string): Promise<Float32Array> {
   return send<Float32Array>({ type: 'embedText', text })
 }

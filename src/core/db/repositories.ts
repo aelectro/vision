@@ -34,6 +34,7 @@ export async function createVision(input: CreateVisionInput): Promise<VisionReco
     description: input.description?.trim() ? input.description.trim() : null,
     autoLabel: null,
     autoConfidence: null,
+    focusJson: null,
     width: input.width,
     height: input.height,
     status: 'pending',

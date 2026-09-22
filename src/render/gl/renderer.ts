@@ -15,6 +15,7 @@ import {
 import { TargetPool, createTexture, type RenderTarget } from '~/render/gl/framebuffer'
 import { createProgram, type Program } from '~/render/gl/program'
 import type { RenderParams } from '~/ml/params'
+import { WHOLE_FRAME, type FocusRegion, type Grid } from '~/render/focus'
 
 /** Returns a copy of the bitmap with its rows reversed. */
 async function flipVertically(image: ImageBitmap): Promise<ImageBitmap> {
@@ -28,6 +29,8 @@ export type RenderFrameOptions = {
   motion?: number
   /** Shows an intermediate pass instead of the composite, for diagnosis. */
   debug?: 'analysis' | 'tensor' | 'edges'
+  /** Where the recognised image sits. Defaults to the whole frame. */
+  focus?: FocusRegion
 }
 
 /**
@@ -193,6 +196,8 @@ export class VisionRenderer {
     const tensorH = this.pool.acquire(2)
     const tensorV = this.pool.acquire(3)
     const edges = this.pool.acquire(4)
+    const softH = this.pool.acquire(5)
+    const soft = this.pool.acquire(6)
 
     const analyze = this.programs.analyze
     gl.useProgram(analyze.handle)
@@ -232,6 +237,19 @@ export class VisionRenderer {
     gl.uniform1f(edgeProgram.uniform('uCoherence'), params.coherence)
     this.draw(edgeProgram, edges)
 
+    // A softened copy of the photo, so the surroundings have somewhere to
+    // recede to rather than just going dark.
+    gl.useProgram(blur.handle)
+    gl.uniform1f(blur.uniform('uSigma'), 3.5)
+    this.bind(blur, 'uSrc', source, 0)
+    gl.uniform2f(blur.uniform('uDirection'), 1, 0)
+    this.draw(blur, softH)
+
+    gl.useProgram(blur.handle)
+    this.bind(blur, 'uSrc', softH.texture, 0)
+    gl.uniform2f(blur.uniform('uDirection'), 0, 1)
+    this.draw(blur, soft)
+
     if (options.debug) {
       const blit = this.programs.blit
       const texture =
@@ -251,8 +269,23 @@ export class VisionRenderer {
     this.bind(compose, 'uSrc', source, 0)
     this.bind(compose, 'uEdges', edges.texture, 1)
     this.bind(compose, 'uDepth', this.depthTexture ?? this.neutralDepth, 2)
+    this.bind(compose, 'uSoft', soft.texture, 3)
     gl.uniform1f(compose.uniform('uHasDepth'), this.depthTexture ? 1 : 0)
     gl.uniform2f(compose.uniform('uTexel'), tx, ty)
+
+    const focus = options.focus ?? WHOLE_FRAME
+    gl.uniform2f(compose.uniform('uFocusCentre'), focus.x, focus.y)
+    gl.uniform1f(compose.uniform('uFocusRadius'), focus.radius)
+    // A flat score field means nothing stood out, so nothing gets singled out.
+    gl.uniform1f(compose.uniform('uFocusStrength'), params.focusStrength * focus.confidence)
+    gl.uniform1f(compose.uniform('uSurroundFade'), params.surroundFade)
+    // Keeps the region round rather than stretched on a portrait frame.
+    const aspect = this.width / this.height
+    gl.uniform2f(
+      compose.uniform('uFocusScale'),
+      aspect >= 1 ? aspect : 1,
+      aspect >= 1 ? 1 : 1 / aspect,
+    )
 
     gl.uniform1f(compose.uniform('uEdgeStrength'), params.edgeStrength)
     gl.uniform1f(compose.uniform('uContrast'), params.contrast)
@@ -274,8 +307,61 @@ export class VisionRenderer {
     gl.uniform1f(compose.uniform('uMotionSpeed'), params.motionSpeed)
     gl.uniform1f(compose.uniform('uContourPulse'), params.contourPulse)
 
+    // The contours draw themselves in over the opening seconds of a clip; a
+    // still simply starts finished.
+    const elapsed = (options.time ?? 0) * 10
+    const reveal =
+      (options.motion ?? 0) < 0.001 || params.reveal <= 0 ? 1 : Math.min(1, elapsed / params.reveal)
+    gl.uniform1f(compose.uniform('uReveal'), reveal)
+
     this.draw(compose, null)
     return this.context.canvas
+  }
+
+  /**
+   * Coarse map of where the coherent structure is.
+   *
+   * This is localisation without any model at all: it cannot say the shape is
+   * a bird, but it can say which part of the frame carries the lines that
+   * might form one. Used directly when the vision model is absent, and as the
+   * fallback when it is present but unsure.
+   */
+  edgeGrid(params: RenderParams, columns = 6, rows = 6): Grid {
+    this.render(params)
+
+    const { gl } = this.context
+    const edges = this.pool.acquire(4)
+
+    // Read the edge pass at full size once, then average into cells. A GPU
+    // downsample would need another target and another pass for a map this
+    // small.
+    const pixels = new Uint8Array(this.width * this.height * 4)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, edges.framebuffer)
+    gl.readPixels(0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+    const values = new Float32Array(columns * rows)
+    const counts = new Uint32Array(columns * rows)
+
+    for (let y = 0; y < this.height; y++) {
+      // Framebuffer rows run bottom-up; the grid is addressed top-down.
+      const row = Math.min(rows - 1, Math.floor(((this.height - 1 - y) / this.height) * rows))
+      for (let x = 0; x < this.width; x++) {
+        const column = Math.min(columns - 1, Math.floor((x / this.width) * columns))
+        const cell = row * columns + column
+        const i = (y * this.width + x) * 4
+        // Line strength weighted by how certain the orientation was, so noise
+        // scattered across a texture counts for less than a coherent edge.
+        values[cell]! += (pixels[i]! / 255) * (0.35 + 0.65 * (pixels[i + 1]! / 255))
+        counts[cell]! += 1
+      }
+    }
+
+    for (let cell = 0; cell < values.length; cell++) {
+      values[cell] = counts[cell]! > 0 ? values[cell]! / counts[cell]! : 0
+    }
+
+    return { values, columns, rows }
   }
 
   dispose(): void {

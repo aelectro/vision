@@ -1,6 +1,8 @@
 import { getVision, setVisionStatus, updateVision } from '~/core/db/repositories'
 import { analyseVision, computeDepth } from '~/ml/analyse'
+import { locateImage } from '~/ml/locate'
 import { defaultParams, parseParams, type RenderParams } from '~/ml/params'
+import type { FocusRegion } from '~/render/focus'
 import { renderTransform } from '~/render/transform'
 
 export type PipelineEvent =
@@ -64,21 +66,24 @@ export async function processVision(visionId: string, override?: RenderParams): 
 
     try {
       const baseline = override ?? defaultParams()
-      await renderTransform(visionId, { params: baseline, modelVersion: 0 })
+      const focus = await locateImage(visionId, baseline, null)
+      await renderTransform(visionId, { params: baseline, modelVersion: 0, focus })
       emit({ type: 'transformed', visionId })
 
       let params = baseline
+      let located = focus
       if (!override) {
         const refined = await refine(visionId)
         if (refined) {
-          params = refined
-          await renderTransform(visionId, { params, modelVersion: 1 })
+          params = refined.params
+          located = await locateImage(visionId, params, refined.archetype)
+          await renderTransform(visionId, { params, modelVersion: 1, focus: located })
           emit({ type: 'transformed', visionId })
         }
       }
 
       await computeDepth(visionId)
-      await makeVideo(visionId, params)
+      await makeVideo(visionId, params, located)
 
       await setVisionStatus(visionId, 'ready')
       emit({ type: 'finished', visionId })
@@ -96,23 +101,31 @@ export async function processVision(visionId: string, override?: RenderParams): 
  * Returns null when the model tier is unavailable, in which case the baseline
  * render already on screen simply stands.
  */
-async function refine(visionId: string): Promise<RenderParams | null> {
+async function refine(
+  visionId: string,
+): Promise<{ params: RenderParams; archetype: string | null } | null> {
   const { embedding, recognition } = await analyseVision(visionId)
   if (!embedding) return null
 
+  let archetype: string | null = null
   if (recognition) {
+    archetype = recognition.confident ? recognition.key : null
     await updateVision(visionId, {
-      autoLabel: recognition.confident ? recognition.key : null,
+      autoLabel: archetype,
       autoConfidence: recognition.confidence,
     })
     emit({ type: 'recognised', visionId })
   }
 
   const { predictParams } = await import('~/ml/head/predict')
-  return predictParams(visionId, embedding)
+  return { params: await predictParams(visionId, embedding), archetype }
 }
 
-async function makeVideo(visionId: string, params: RenderParams): Promise<void> {
+async function makeVideo(
+  visionId: string,
+  params: RenderParams,
+  focus: FocusRegion,
+): Promise<void> {
   // Loaded on demand: the muxer and its codec tables are a sizeable chunk, and
   // nothing about capture or the still transformation needs them.
   const video = await import('~/render/video')
@@ -120,6 +133,7 @@ async function makeVideo(visionId: string, params: RenderParams): Promise<void> 
     await video.exportVideo(visionId, {
       params,
       modelVersion: 1,
+      focus,
       onProgress: (fraction) => emit({ type: 'videoProgress', visionId, fraction }),
     })
   } catch (error) {

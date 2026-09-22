@@ -17,6 +17,8 @@ export type VisionRecord = {
   /** Best zero-shot guess from the vocabulary, once tier 1 has run. */
   autoLabel: string | null
   autoConfidence: number | null
+  /** Serialised FocusRegion: where in the frame the image was found. */
+  focusJson: string | null
   width: number
   height: number
   status: VisionStatus

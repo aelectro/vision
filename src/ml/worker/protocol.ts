@@ -5,6 +5,7 @@ export type MlRequest =
   | { id: number; type: 'ensure'; tier: ModelTier }
   | { id: number; type: 'release'; tier: ModelTier }
   | { id: number; type: 'embedImage'; bitmap: ImageBitmap }
+  | { id: number; type: 'embedImageBatch'; bitmaps: ImageBitmap[] }
   | { id: number; type: 'embedText'; text: string }
   | { id: number; type: 'depth'; bitmap: ImageBitmap }
 

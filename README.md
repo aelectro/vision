@@ -99,6 +99,7 @@ need `npm run dev` running in another terminal.
 ```bash
 npm run verify:render       # renders a synthetic image, measures the contour pass
 npm run verify:orientation  # checks the image comes out the right way up
+npm run verify:focus        # checks the found image is singled out, not the whole frame
 npm run verify:video        # encodes a real ten-second clip and plays it back
 npm run verify:diagnostics  # runs the in-app device checks
 npm run diagnose:render     # per-pass statistics, for when a signal goes missing

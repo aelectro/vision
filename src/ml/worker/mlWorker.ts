@@ -185,6 +185,35 @@ async function embedImage(bitmap: ImageBitmap): Promise<Float32Array> {
   return firstEmbedding(output)
 }
 
+/**
+ * Embeds several crops in one go.
+ *
+ * Used to ask where in the frame something is: one pass over a grid of crops
+ * is far cheaper than a round trip per crop, and on a phone the difference
+ * decides whether locating the image takes a second or half a minute.
+ */
+async function embedImageBatch(bitmaps: ImageBitmap[]): Promise<Float32Array[]> {
+  const bundle = (await ensure('vision')) as VisionBundle
+
+  const images = await Promise.all(
+    bitmaps.map(async (bitmap) => RawImage.fromBlob(await bitmapToBlob(bitmap))),
+  )
+
+  const inputs = await bundle.processor(images)
+  const output = (await bundle.model(inputs)) as Record<string, unknown>
+
+  const tensor = output['image_embeds'] as { data?: unknown; dims?: number[] } | undefined
+  const data = tensor?.data
+  if (!(data instanceof Float32Array)) throw new Error('Model returned no embeddings')
+
+  const stride = tensor?.dims?.at(-1) ?? EMBEDDING_SIZE
+  const out: Float32Array[] = []
+  for (let i = 0; i < bitmaps.length; i++) {
+    out.push(normalise(data.slice(i * stride, i * stride + EMBEDDING_SIZE)))
+  }
+  return out
+}
+
 async function embedText(text: string): Promise<Float32Array> {
   const bundle = (await ensure('text')) as TextBundle
   const inputs = bundle.tokenizer([text], { padding: true, truncation: true })
@@ -240,6 +269,12 @@ async function handle(request: MlRequest): Promise<unknown> {
         return await embedImage(request.bitmap)
       } finally {
         request.bitmap.close()
+      }
+    case 'embedImageBatch':
+      try {
+        return await embedImageBatch(request.bitmaps)
+      } finally {
+        for (const bitmap of request.bitmaps) bitmap.close()
       }
     case 'embedText':
       return await embedText(request.text)

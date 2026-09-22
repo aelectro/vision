@@ -121,6 +121,17 @@ export function loadVocabulary(): Promise<Vocabulary | null> {
   return inFlight
 }
 
+/** The embedding of one archetype, for asking where in a frame it appears. */
+export async function archetypeVector(key: string): Promise<Float32Array | null> {
+  const vocabulary = await loadVocabulary()
+  if (!vocabulary) return null
+
+  const index = vocabulary.keys.indexOf(key)
+  if (index < 0) return null
+
+  return vocabulary.matrix.slice(index * EMBEDDING_SIZE, (index + 1) * EMBEDDING_SIZE)
+}
+
 export type Match = {
   key: string
   /** Cosine similarity; both sides are unit length so this is a dot product. */

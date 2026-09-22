@@ -53,6 +53,13 @@ export type RenderParams = {
   motionSpeed: number
   /** How much the contours pulse in brightness over time. */
   contourPulse: number
+
+  /** How hard the found image is separated from everything around it. */
+  focusStrength: number
+  /** How far the surroundings recede: desaturated, darkened, softened. */
+  surroundFade: number
+  /** Seconds the contours take to draw themselves in at the start of a clip. */
+  reveal: number
 }
 
 type Range = { min: number; max: number; default: number; step: number }
@@ -87,6 +94,10 @@ export const PARAM_RANGES = {
   breathing: { min: 0, max: 1, default: 0.3, step: 0.01 },
   motionSpeed: { min: 0.25, max: 2, default: 1, step: 0.05 },
   contourPulse: { min: 0, max: 1, default: 0.35, step: 0.01 },
+
+  focusStrength: { min: 0, max: 1, default: 0.8, step: 0.01 },
+  surroundFade: { min: 0, max: 1, default: 0.65, step: 0.01 },
+  reveal: { min: 0, max: 4, default: 2, step: 0.1 },
 } as const satisfies Record<keyof RenderParams, Range>
 
 export const PARAM_KEYS = Object.keys(PARAM_RANGES) as (keyof RenderParams)[]

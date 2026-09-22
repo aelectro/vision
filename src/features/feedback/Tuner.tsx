@@ -14,11 +14,12 @@ import { PARAM_RANGES, type RenderParams } from '~/ml/params'
  * teaches the network about all twenty for images like this one.
  */
 const EXPOSED = [
+  ['focusStrength', 'tune.focusStrength'],
+  ['surroundFade', 'tune.surroundFade'],
   ['edgeStrength', 'tune.edgeStrength'],
   ['edgeThreshold', 'tune.edgeThreshold'],
   ['contrast', 'tune.contrast'],
   ['saturation', 'tune.saturation'],
-  ['posterise', 'tune.posterise'],
   ['parallax', 'tune.parallax'],
 ] as const satisfies readonly (readonly [keyof RenderParams, MessageKey])[]
 

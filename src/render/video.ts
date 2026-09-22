@@ -10,6 +10,7 @@ import {
 
 import { getBlob, saveArtifact } from '~/core/db/repositories'
 import type { RenderParams } from '~/ml/params'
+import { WHOLE_FRAME, type FocusRegion } from '~/render/focus'
 import { VisionRenderer } from '~/render/gl/renderer'
 
 export const CLIP_SECONDS = 10
@@ -41,6 +42,7 @@ export type VideoProgress = (fraction: number) => void
 export type ExportVideoOptions = {
   params: RenderParams
   modelVersion: number
+  focus?: FocusRegion
   onProgress?: VideoProgress
   signal?: AbortSignal
 }
@@ -89,7 +91,8 @@ export async function exportVideo(visionId: string, options: ExportVideoOptions)
 
     const codec = await pickCodec(renderer.width, renderer.height)
 
-    const canvas = renderer.render(options.params, { time: 0, motion: 1 })
+    const focus = options.focus ?? WHOLE_FRAME
+    const canvas = renderer.render(options.params, { time: 0, motion: 1, focus })
 
     const output = new Output({ format: new Mp4OutputFormat(), target: new BufferTarget() })
     const source = new CanvasSource(canvas, {
@@ -111,7 +114,7 @@ export async function exportVideo(visionId: string, options: ExportVideoOptions)
 
       // Time runs 0..1 across the clip so the shader's periodic terms line up
       // with its length regardless of frame rate.
-      renderer.render(options.params, { time: frame / frames, motion: 1 })
+      renderer.render(options.params, { time: frame / frames, motion: 1, focus })
       // Awaiting each frame is the backpressure. Queueing all 300 at once
       // would hold every one of them in memory and is exactly how iOS decides
       // to kill the tab.

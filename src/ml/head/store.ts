@@ -4,7 +4,7 @@ import { MLP_INPUT_SIZE, MLP_PARAMETER_COUNT, MlpHead } from '~/ml/head/mlp'
 import { EMBEDDING_SIZE } from '~/ml/tiers'
 
 /** Bumped whenever the topology changes, which invalidates stored weights. */
-export const HEAD_VERSION = 1
+export const HEAD_VERSION = 2
 
 export type HeadState = {
   model: MlpHead
