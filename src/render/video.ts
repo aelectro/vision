@@ -16,14 +16,18 @@ export const CLIP_SECONDS = 10
 const FRAME_RATE = 30
 
 /**
- * Video is rendered smaller than the still.
+ * Video is rendered smaller than the still, and at a modest bitrate.
  *
- * Three hundred frames at photo resolution would produce a file far larger
- * than the photo itself, and storage is the scarcest resource here - iOS
- * evicts an origin wholesale when it runs out. The clip is something to watch,
- * not something to zoom into.
+ * Three hundred frames at photo resolution produce a file several times the
+ * size of the photo they came from, and storage is the scarcest resource here:
+ * iOS evicts an origin wholesale when it runs out, taking every saved photo
+ * with it. The clip is something to watch, not something to zoom into, and its
+ * content - slow drifts of a mostly static image - is exactly what a low
+ * bitrate handles well.
  */
-const VIDEO_MAX_EDGE = 1080
+const VIDEO_MAX_EDGE = 720
+
+export const VIDEO_SETTINGS = { MAX_EDGE: VIDEO_MAX_EDGE, FRAME_RATE: 30 }
 
 /**
  * H.264 first, always. It is hardware-encoded on iPhones and it is the only

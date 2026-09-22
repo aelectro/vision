@@ -1,5 +1,6 @@
 import { addFeedback, getEmbedding, listFeedback } from '~/core/db/repositories'
 import type { FeedbackSignal } from '~/core/db/types'
+import { yieldToBrowser } from '~/core/scheduling'
 import { buildInput, loadHead, persistHead, resetHead } from '~/ml/head/store'
 import { MLP_INPUT_SIZE } from '~/ml/head/mlp'
 import { normalise, parseParams, type RenderParams } from '~/ml/params'
@@ -96,6 +97,11 @@ export async function learnFrom(
 
     head.optimiser.step(head.model.parameters(), head.model.gradients())
     lastLoss = loss / batch.length
+
+    // Roughly every 50 ms on a phone. Long enough to make progress, short
+    // enough that a tap still lands.
+    // oxlint-disable-next-line eslint/no-await-in-loop
+    if (step % 8 === 7) await yieldToBrowser()
   }
 
   head.steps += STEPS
@@ -141,6 +147,9 @@ export async function retrainFromHistory(epochs = 30): Promise<TrainingOutcome> 
 
     head.optimiser.step(head.model.parameters(), head.model.gradients())
     lastLoss = loss / examples.length
+
+    // oxlint-disable-next-line eslint/no-await-in-loop
+    if (epoch % 8 === 7) await yieldToBrowser()
   }
 
   head.steps = epochs

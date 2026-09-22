@@ -19,6 +19,7 @@
     "verify:render": "node tools/verify-render.mjs",
     "verify:video": "node tools/verify-video.mjs",
     "diagnose:render": "node tools/diagnose-render.mjs",
+    "benchmark": "node tools/benchmark.mjs",
     "playwright:install": "playwright install chromium",
     "generate:assets": "pwa-assets-generator"
   },

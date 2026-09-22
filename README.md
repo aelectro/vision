@@ -107,6 +107,24 @@ overlay off and then on, so what it measures is the edge pass and nothing else.
 That is what caught the shader bug described in the commit history — absolute
 brightness would have looked fine.
 
+```bash
+npm run benchmark        # timings for the shader chain, video export and training
+```
+
+Measured on this desktop, September 2026:
+
+| What | Cost |
+| --- | --- |
+| Shader chain, 6 passes | 1.1 ms at 1024×768, 2.8 ms at 2048×1536, 4.1 ms at 2560×1920 |
+| Video export | 5.0 ms per frame, 1.5 s for the whole clip, 1.6 MB |
+| Forward + backward | 0.46 ms per example, 298k parameters |
+| Adam step | 0.73 ms — more than a forward and backward pass together |
+| One piece of feedback | 321 ms, 40 steps over 16 examples |
+
+A phone is roughly three to five times slower. That last row is why training
+yields to the browser between steps: run straight through it would be about a
+second during which nothing scrolls.
+
 These use the system Edge rather than a downloaded Chromium, because this
 machine's TLS interception blocks Playwright's browser download. Run
 `npm run playwright:install` if you would rather use a real Chromium and your

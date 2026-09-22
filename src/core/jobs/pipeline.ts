@@ -32,8 +32,15 @@ function emit(event: PipelineEvent): void {
 let queue: Promise<void> = Promise.resolve()
 
 export function enqueue(task: () => Promise<void>): Promise<void> {
-  queue = queue.then(task, task)
-  return queue
+  const run = queue.then(task, task)
+  // The chain continues whatever happens, but the caller still sees the error.
+  // Swallowing it here as well is what stops a failing task from surfacing as
+  // an unhandled rejection when nothing else is queued behind it.
+  queue = run.then(
+    () => undefined,
+    () => undefined,
+  )
+  return run
 }
 
 /**
