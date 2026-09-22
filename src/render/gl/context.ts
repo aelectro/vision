@@ -32,6 +32,12 @@ export class GlUnavailableError extends Error {
 /**
  * Largest size that fits both the device's texture limit and the area budget,
  * preserving aspect ratio.
+ *
+ * Always even. H.264 subsamples chroma and cannot represent an odd side, so an
+ * odd working size makes the encoder refuse the whole clip - a 9:16 photo at a
+ * 720 cap lands on 405x720 and fails. Rounding here rather than in front of
+ * the encoder means every consumer gets usable dimensions by construction, and
+ * costs at most one pixel.
  */
 export function fitWorkingSize(
   width: number,
@@ -39,7 +45,7 @@ export function fitWorkingSize(
   capabilities: Pick<GlCapabilities, 'maxTextureSize'>,
   maxArea = MAX_CANVAS_AREA,
 ): { width: number; height: number } {
-  if (width <= 0 || height <= 0) return { width: 1, height: 1 }
+  if (width <= 0 || height <= 0) return { width: 2, height: 2 }
 
   let scale = 1
 
@@ -54,9 +60,15 @@ export function fitWorkingSize(
   }
 
   return {
-    width: Math.max(1, Math.floor(width * scale)),
-    height: Math.max(1, Math.floor(height * scale)),
+    width: toEven(width * scale),
+    height: toEven(height * scale),
   }
+}
+
+/** Rounds down to an even number, never below 2. */
+function toEven(value: number): number {
+  const floored = Math.floor(value)
+  return Math.max(2, floored - (floored % 2))
 }
 
 export function createGlContext(width: number, height: number): GlContext {

@@ -16,6 +16,11 @@ import { TargetPool, createTexture, type RenderTarget } from '~/render/gl/frameb
 import { createProgram, type Program } from '~/render/gl/program'
 import type { RenderParams } from '~/ml/params'
 
+/** Returns a copy of the bitmap with its rows reversed. */
+async function flipVertically(image: ImageBitmap): Promise<ImageBitmap> {
+  return createImageBitmap(image, { imageOrientation: 'flipY' })
+}
+
 export type RenderFrameOptions = {
   /** 0 for the still image, 0..1 through the clip for video frames. */
   time?: number
@@ -108,19 +113,33 @@ export class VisionRenderer {
     return new VisionRenderer(context, size.width, size.height)
   }
 
-  /** Uploads the photo. Flipped on upload so every pass shares one convention. */
-  setSource(image: ImageBitmap): void {
+  /**
+   * Uploads the photo.
+   *
+   * Textures rendered into a framebuffer have their first row at the bottom,
+   * because that is where OpenGL puts it, and every pass here reads and writes
+   * with that convention. An image arrives the other way up, so it has to be
+   * flipped once on the way in to match.
+   *
+   * Done explicitly rather than with UNPACK_FLIP_Y_WEBGL, which browsers do
+   * not apply consistently to ImageBitmap sources - it was silently ignored
+   * here, and the result was every transformation coming out upside down.
+   */
+  async setSource(image: ImageBitmap): Promise<void> {
     const { gl } = this.context
     if (this.sourceTexture) gl.deleteTexture(this.sourceTexture)
 
-    this.sourceTexture = createTexture(gl, this.width, this.height)
-    gl.bindTexture(gl.TEXTURE_2D, this.sourceTexture)
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, image)
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false)
+    const flipped = await flipVertically(image)
+    try {
+      this.sourceTexture = createTexture(gl, this.width, this.height)
+      gl.bindTexture(gl.TEXTURE_2D, this.sourceTexture)
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, flipped)
+    } finally {
+      flipped.close()
+    }
   }
 
-  setDepth(map: ImageBitmap | null): void {
+  async setDepth(map: ImageBitmap | null): Promise<void> {
     const { gl } = this.context
     if (this.depthTexture) {
       gl.deleteTexture(this.depthTexture)
@@ -128,11 +147,14 @@ export class VisionRenderer {
     }
     if (!map) return
 
-    this.depthTexture = createTexture(gl, map.width, map.height)
-    gl.bindTexture(gl.TEXTURE_2D, this.depthTexture)
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, map)
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false)
+    const flipped = await flipVertically(map)
+    try {
+      this.depthTexture = createTexture(gl, flipped.width, flipped.height)
+      gl.bindTexture(gl.TEXTURE_2D, this.depthTexture)
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, flipped)
+    } finally {
+      flipped.close()
+    }
   }
 
   private draw(program: Program, target: RenderTarget | null): void {

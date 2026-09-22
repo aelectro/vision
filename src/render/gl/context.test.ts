@@ -9,6 +9,25 @@ describe('fitWorkingSize', () => {
     expect(fitWorkingSize(1600, 1200, caps)).toEqual({ width: 1600, height: 1200 })
   })
 
+  it('always returns even dimensions, because H.264 cannot encode odd ones', () => {
+    // The case that actually broke: a 9:16 photo capped at 720 lands on 405.
+    expect(fitWorkingSize(1080, 1920, { maxTextureSize: 720 })).toEqual({
+      width: 404,
+      height: 720,
+    })
+
+    for (const [w, h] of [
+      [1001, 1001],
+      [999, 501],
+      [3, 7],
+      [1920, 1081],
+    ] as const) {
+      const size = fitWorkingSize(w, h, caps)
+      expect(size.width % 2, `${w}x${h} width`).toBe(0)
+      expect(size.height % 2, `${w}x${h} height`).toBe(0)
+    }
+  })
+
   it('respects the device texture limit', () => {
     const size = fitWorkingSize(40000, 1000, { maxTextureSize: 4096 })
     expect(Math.max(size.width, size.height)).toBeLessThanOrEqual(4096)
@@ -25,8 +44,8 @@ describe('fitWorkingSize', () => {
   })
 
   it('never returns a zero dimension', () => {
-    expect(fitWorkingSize(0, 0, caps)).toEqual({ width: 1, height: 1 })
-    expect(fitWorkingSize(-10, 5, caps)).toEqual({ width: 1, height: 1 })
+    expect(fitWorkingSize(0, 0, caps)).toEqual({ width: 2, height: 2 })
+    expect(fitWorkingSize(-10, 5, caps)).toEqual({ width: 2, height: 2 })
 
     const sliver = fitWorkingSize(30000, 1, caps)
     expect(sliver.width).toBeGreaterThan(0)

@@ -8,6 +8,9 @@
  *   npm run dev        (in another terminal)
  *   npm run benchmark
  */
+/* oxlint-disable eslint/no-await-in-loop --
+   Each resolution holds a WebGL context while it is measured, and browsers cap
+   how many can be live at once, so these have to run one after another. */
 import { chromium } from 'playwright'
 
 const URL = process.env.VERIFY_URL ?? 'http://localhost:5173/'
@@ -44,15 +47,12 @@ const scenario = async () => {
 
   for (const size of [1024, 2048, 2560]) {
     const canvas = makeImage(size)
-    // Sequential: each iteration holds a WebGL context, and browsers cap how
-    // many can be live at once.
-    // oxlint-disable-next-line eslint/no-await-in-loop
     const bitmap = await createImageBitmap(canvas)
     const renderer = VisionRenderer.create(bitmap.width, bitmap.height)
     const params = defaultParams()
 
     try {
-      renderer.setSource(bitmap)
+      await renderer.setSource(bitmap)
       renderer.render(params) // warm up: shader compilation is a one-off
 
       // The GPU runs asynchronously, so timing the render calls alone measures

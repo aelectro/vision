@@ -71,7 +71,7 @@ const scenario = async () => {
   }
 
   try {
-    renderer.setSource(bitmap)
+    await renderer.setSource(bitmap)
     return {
       analysis: sample('analysis'),
       tensor: sample('tensor'),

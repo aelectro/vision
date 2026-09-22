@@ -20,20 +20,25 @@ const scenario = async () => {
   const { VisionRenderer } = await import('/src/render/gl/renderer.ts')
   const { defaultParams } = await import('/src/ml/params.ts')
 
+  const makeSource = (width, height) => {
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    const ctx = canvas.getContext('2d')
+    const gradient = ctx.createLinearGradient(0, 0, width, height)
+    gradient.addColorStop(0, '#3d4a57')
+    gradient.addColorStop(1, '#6a7480')
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, width, height)
+    ctx.fillStyle = '#ece6dc'
+    ctx.beginPath()
+    ctx.arc(width / 2, height / 2, Math.min(width, height) / 4, 0, Math.PI * 2)
+    ctx.fill()
+    return canvas
+  }
+
   const size = 320
-  const source = document.createElement('canvas')
-  source.width = size
-  source.height = size
-  const ctx = source.getContext('2d')
-  const gradient = ctx.createLinearGradient(0, 0, size, size)
-  gradient.addColorStop(0, '#3d4a57')
-  gradient.addColorStop(1, '#6a7480')
-  ctx.fillStyle = gradient
-  ctx.fillRect(0, 0, size, size)
-  ctx.fillStyle = '#ece6dc'
-  ctx.beginPath()
-  ctx.arc(size / 2, size / 2, size / 4, 0, Math.PI * 2)
-  ctx.fill()
+  const source = makeSource(size, size)
 
   const blob = await new Promise((resolve) => source.toBlob(resolve, 'image/jpeg', 0.9))
 
@@ -54,7 +59,7 @@ const scenario = async () => {
   const params = defaultParams()
   let movedFraction = 0
   try {
-    renderer.setSource(bitmap)
+    await renderer.setSource(bitmap)
     const snapshot = (time) => {
       const canvas = renderer.render(params, { time, motion: 1 })
       const read = document.createElement('canvas')
@@ -111,6 +116,32 @@ const scenario = async () => {
   const stored = await repositories.latestArtifact(vision.id, 'video')
   await repositories.deleteVision(vision.id)
 
+  // The shape that actually failed on the phone: a 9:16 photo, which the 720
+  // cap turns into 405 pixels wide. H.264 cannot encode an odd side, so this
+  // is the regression guard for that bug.
+  let portrait = null
+  {
+    const tall = makeSource(1080, 1920)
+    const tallBlob = await new Promise((resolve) => tall.toBlob(resolve, 'image/jpeg', 0.9))
+    const tallVision = await repositories.createVision({
+      original: tallBlob,
+      thumb: tallBlob,
+      width: 1080,
+      height: 1920,
+    })
+
+    try {
+      const clip = await exportVideo(tallVision.id, {
+        params: defaultParams(),
+        modelVersion: 0,
+      })
+      portrait = { ok: true, bytes: clip.size, error: null }
+    } catch (error) {
+      portrait = { ok: false, bytes: 0, error: String(error) }
+    }
+    await repositories.deleteVision(tallVision.id)
+  }
+
   return {
     hardwareH264,
     movedFraction,
@@ -122,6 +153,7 @@ const scenario = async () => {
     progressEndsAtOne: progress.at(-1) === 1,
     storedArtifact: stored !== undefined,
     metadata,
+    portrait,
   }
 }
 
@@ -169,7 +201,14 @@ try {
     ],
     ['progress was reported to completion', stats.progressSteps > 0 && stats.progressEndsAtOne],
     ['the artefact was stored', stats.storedArtifact],
+    ['a 9:16 photo encodes, which is the shape that failed', stats.portrait?.ok === true],
   ]
+
+  if (stats.portrait && !stats.portrait.ok) {
+    console.log(`\n  portrait export failed: ${stats.portrait.error}`)
+  } else if (stats.portrait) {
+    console.log(`\n  9:16 clip       ${Math.round(stats.portrait.bytes / 1024)} KB`)
+  }
 
   console.log('')
   for (const [label, ok] of checks) {

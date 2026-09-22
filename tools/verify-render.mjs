@@ -54,7 +54,7 @@ const scenario = async () => {
   }
 
   try {
-    renderer.setSource(bitmap)
+    await renderer.setSource(bitmap)
 
     const base = defaultParams()
     // Grain is random per pixel and would swamp the difference measurement.

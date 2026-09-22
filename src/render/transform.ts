@@ -35,12 +35,12 @@ export async function renderTransform(visionId: string, options: TransformOption
   const renderer = VisionRenderer.create(bitmap.width, bitmap.height)
 
   try {
-    renderer.setSource(bitmap)
+    await renderer.setSource(bitmap)
 
     const depth = await getBlob(visionId, 'depth')
     if (depth) {
       const depthMap = await createImageBitmap(depth.blob)
-      renderer.setDepth(depthMap)
+      await renderer.setDepth(depthMap)
       depthMap.close()
     }
 

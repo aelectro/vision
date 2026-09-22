@@ -64,11 +64,6 @@ async function pickCodec(width: number, height: number): Promise<VideoCodec> {
   throw new VideoUnsupportedError()
 }
 
-/** Even dimensions: H.264 chroma subsampling cannot represent odd ones. */
-function evenSize(value: number): number {
-  return Math.max(2, value - (value % 2))
-}
-
 /**
  * Renders the ten-second clip frame by frame and muxes it into an MP4.
  *
@@ -83,18 +78,16 @@ export async function exportVideo(visionId: string, options: ExportVideoOptions)
   const renderer = VisionRenderer.create(bitmap.width, bitmap.height, VIDEO_MAX_EDGE)
 
   try {
-    renderer.setSource(bitmap)
+    await renderer.setSource(bitmap)
 
     const depth = await getBlob(visionId, 'depth')
     if (depth) {
       const depthMap = await createImageBitmap(depth.blob)
-      renderer.setDepth(depthMap)
+      await renderer.setDepth(depthMap)
       depthMap.close()
     }
 
-    const width = evenSize(renderer.width)
-    const height = evenSize(renderer.height)
-    const codec = await pickCodec(width, height)
+    const codec = await pickCodec(renderer.width, renderer.height)
 
     const canvas = renderer.render(options.params, { time: 0, motion: 1 })
 
@@ -103,8 +96,8 @@ export async function exportVideo(visionId: string, options: ExportVideoOptions)
       codec,
       quality: QUALITY_MEDIUM,
       keyFrameInterval: 2,
-      // The canvas is a fixed size, but a clamped working resolution can make
-      // it differ by a pixel from the even dimensions above.
+      // The working size is guaranteed even, so the encoder never sees a size
+      // it cannot represent; this only guards against a late surprise.
       sizeChangeBehavior: 'contain',
     })
     output.addVideoTrack(source)

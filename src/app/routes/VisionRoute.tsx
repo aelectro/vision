@@ -145,6 +145,35 @@ export function VisionRoute() {
           <BackIcon />
           {t('common.back')}
         </Link>
+
+        {!vision.description && (
+          <form
+            className="vision__ask"
+            onSubmit={(event) => {
+              event.preventDefault()
+              void saveDescription()
+            }}
+          >
+            <span className="vision__askLabel">{t('vision.question')}</span>
+            <div className="vision__askRow">
+              <input
+                className="vision__askInput"
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder={t('vision.questionPlaceholder')}
+                enterKeyHint="done"
+                aria-label={t('vision.question')}
+              />
+              <button
+                type="submit"
+                className="vision__askSave"
+                disabled={busy || draft.trim().length === 0}
+              >
+                {t('vision.save')}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
 
       <div className="vision__tabs" role="tablist">
@@ -163,16 +192,20 @@ export function VisionRoute() {
       </div>
 
       <div className="vision__body">
-        <label className="vision__label" htmlFor="vision-description">
-          {t('vision.description')}
-        </label>
-        <textarea
-          id="vision-description"
-          className="vision__description"
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          placeholder={t('vision.descriptionPlaceholder')}
-        />
+        {vision.description !== null && (
+          <>
+            <label className="vision__label" htmlFor="vision-description">
+              {t('vision.description')}
+            </label>
+            <textarea
+              id="vision-description"
+              className="vision__description"
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder={t('vision.questionPlaceholder')}
+            />
+          </>
+        )}
 
         <div className="vision__actions">
           <button

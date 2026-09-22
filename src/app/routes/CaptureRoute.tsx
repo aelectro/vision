@@ -65,13 +65,13 @@ export function CaptureRoute() {
   const { videoRef, status, settings, facing, flip } = useCamera(true)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
-  const [description, setDescription] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const save = async (captured: Awaited<ReturnType<typeof captureFromVideo>>) => {
-    const vision = await createVision({ ...captured, description })
-    setDescription('')
+    // The description is asked for on the next screen, once there is a photo
+    // to describe.
+    const vision = await createVision(captured)
     // Transformation runs in the background; the detail screen shows progress.
     void processVision(vision.id)
     await navigate(`/vision/${vision.id}`)
@@ -150,14 +150,6 @@ export function CaptureRoute() {
       </div>
 
       <div className="capture__controls">
-        <input
-          className="capture__describe"
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          placeholder={t('capture.describePlaceholder')}
-          enterKeyHint="done"
-        />
-
         <div className="capture__row">
           <button
             type="button"

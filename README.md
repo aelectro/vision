@@ -97,15 +97,23 @@ which exists under Node, so those are checked by driving a real browser. They
 need `npm run dev` running in another terminal.
 
 ```bash
-npm run verify:render    # renders a synthetic image, measures the contour pass
-npm run verify:video     # encodes a real ten-second clip and plays it back
-npm run diagnose:render  # per-pass statistics, for when a signal goes missing
+npm run verify:render       # renders a synthetic image, measures the contour pass
+npm run verify:orientation  # checks the image comes out the right way up
+npm run verify:video        # encodes a real ten-second clip and plays it back
+npm run verify:diagnostics  # runs the in-app device checks
+npm run diagnose:render     # per-pass statistics, for when a signal goes missing
 ```
 
 `verify:render` works by difference: it renders the same image with the contour
 overlay off and then on, so what it measures is the edge pass and nothing else.
 That is what caught the shader bug described in the commit history — absolute
 brightness would have looked fine.
+
+`verify:orientation` exists because `verify:render` could not do its job: it
+draws a centred circle, which looks identical upside down. A vertical flip
+survived that check and only surfaced on a real photo. Its target is
+asymmetric in both axes, so a flip or a mirror shows up as a marker landing in
+the wrong corner — and it names which.
 
 ```bash
 npm run benchmark        # timings for the shader chain, video export and training
