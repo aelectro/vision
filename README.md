@@ -185,6 +185,22 @@ tools/        build-time scripts (vocabulary encoding)
 
 ## Publishing
 
-Deployment is deliberately the last step and is not needed for development. When the time
-comes, a GitHub Actions workflow builds the site and publishes it to GitHub Pages; the
-repository must be public for Pages on the free plan.
+Deployment is not needed for development, but it is the easiest way to get the
+app onto a phone — the camera needs HTTPS, and a real origin also lets you
+install it to the home screen properly.
+
+`.github/workflows/deploy.yml` lints, tests, builds and publishes to GitHub
+Pages on every push to `main`. What you have to do once:
+
+1. Create a **public** repository and push. Pages from a private repository
+   needs a paid plan.
+2. Settings → Pages → Source: **GitHub Actions**.
+
+The workflow passes `VITE_BASE=/<repo>/` so the bundle knows it is served from
+a subdirectory. Everything else is already relative: routing is hash-based, so
+there are no deep links for the server to rewrite, and the manifest's
+`start_url`, `scope` and icons resolve against their own location.
+
+Your photos, videos, descriptions and the weights of the model that learns your
+taste never leave the browser. Only source code goes to the repository; model
+weights are fetched from Hugging Face by the browser and cached locally.
